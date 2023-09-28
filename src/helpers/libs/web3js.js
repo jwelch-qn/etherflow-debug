@@ -74,9 +74,8 @@ const contractTraceTemplate = (url, args) => {
 (async () => {
   const abiFragment = ${abi && JSON.stringify(abi[0])}
   const web3 = new Web3('${url}');
-  const data = web3.eth.abi.encodeFunctionCall(abiFragment, [${methodArgumentsString}]);${
-    from ? `\n  const from = "${from}";` : ''
-  }
+  const data = web3.eth.abi.encodeFunctionCall(abiFragment, [${methodArgumentsString}]);${from ? `\n  const from = "${from}";` : ''
+    }
   const to = "${contract}"; ${value ? `\n  const value = "${value}";` : ''}
   const transaction = { ${from ? `\n    from,` : ''}
     to,${value ? `\n    value,` : ''}
@@ -786,16 +785,14 @@ const Web3JSCalls = {
     codeSample: (url, ...args) => {
       const filter = `const filter = {
   ${args[0] ? "fromBlock: '" + args[0] + "'" : "fromBlock: 'latest'"},
-  ${args[1] ? "toBlock: '" + args[1] + "'" : "toBlock: 'latest'"},${
-        args[2] ? "\n  address: '" + args[2] + "'," : ''
-      }
-  topics: ${
-    args[3]
-      ? JSON.stringify(
-          args[3].split(',').map((x) => (x === 'null' ? null : x.split('||')))
-        )
-      : '[]'
-  }
+  ${args[1] ? "toBlock: '" + args[1] + "'" : "toBlock: 'latest'"},${args[2] ? "\n  address: '" + args[2] + "'," : ''
+        }
+  topics: ${args[3]
+          ? JSON.stringify(
+            args[3].split(',').map((x) => (x === 'null' ? null : x.split('||')))
+          )
+          : '[]'
+        }
 };`;
       return filterTemplate(url, 'eth_newFilter', filter);
     },
@@ -1200,11 +1197,9 @@ const Web3JSCalls = {
   });
   const trace = await web3.parityTraceFilter({
     "fromBlock": "${args[0] || 'latest'}",
-    "toBlock": "${args[1] || 'latest'}",${
-        args[2] ? '\n\t"fromAddress": [' + args[2] + '],' : ''
-      }${args[3] ? '\n\t"toAddress": [' + args[3] + '],' : ''}${
-        args[4] ? '\n\t"after": ' + args[3] + ',' : ''
-      }${args[4] ? '\n\t"count": ' + args[4] + ',' : ''}
+    "toBlock": "${args[1] || 'latest'}",${args[2] ? '\n\t"fromAddress": [' + args[2] + '],' : ''
+        }${args[3] ? '\n\t"toAddress": [' + args[3] + '],' : ''}${args[4] ? '\n\t"after": ' + args[3] + ',' : ''
+        }${args[4] ? '\n\t"count": ' + args[4] + ',' : ''}
   });
   console.log(trace);
 })()
@@ -1339,6 +1334,132 @@ const Web3JSCalls = {
       },
     ],
   },
+  debug_getBadBlocks: {
+    exec: (provider, proto, ...args) => {
+      return new Promise((resolve, reject) => {
+        provider.currentProvider.send({
+          jsonrpc: '2.0',
+          method: 'debug_getBadBlocks',
+          id: new Date().getTime()
+        }, (error, result) => {
+          if (error) {
+            return reject(error);
+          }
+          return resolve(result.result);
+        });
+      });
+    },
+    codeSample: (url, ...args) => {
+      return web3Template(`eth.debug_getBadBlocks()`, 'badBlocks', url);
+    },
+    args: [],
+  },
+  debug_storageRangeAt: {
+    exec: (provider, proto, ...args) => {
+      return new Promise((resolve, reject) => {
+        provider.currentProvider.send(
+          {
+            jsonrpc: '2.0',
+            method: 'debug_storageRangeAt',
+            params: [
+              args[0],
+              parseInt(args[1], 10),
+              args[2],
+              args[3],
+              parseInt(args[4], 10),
+            ],
+            id: new Date().getTime(),
+          },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            return resolve(result.result);
+          }
+        );
+      });
+    },
+    codeSample: (url, ...args) => {
+      return web3Template(`eth.debug_storageRangeAt()`, 'storageRange', url); // pseudo-code, this method doesn't actually exist in Web3.js
+    },
+    args: [
+      {
+        type: 'textarea',
+        description: 'The block hash in string format or block number as hexadecimal in the object format',
+        placeholder:
+          'i.e. 0x76f64c40d6493cf00426be2eecdaf3f968768619bfb21ce6c57921be497ab3f7',
+      },
+      {
+        type: 'textarea',
+        description: 'The transaction index for the point in which we want the list of accounts',
+        placeholder:
+          'i.e. 2',
+      },
+      {
+        type: 'textarea',
+        description: 'The contract address',
+        placeholder:
+          'i.e. 0xdafea492d9c6733ae3d56b7ed1adb60692c98bc5',
+      },
+      {
+        type: 'textarea',
+        description: 'The offset (hash of storage key)',
+        placeholder:
+          'i.e. 0x0000000000000000000000000000000000000000000000000000000000000000',
+      },
+      {
+        type: 'textarea',
+        description: 'The number of storage entries to return',
+        placeholder:
+          'i.e. 2',
+      },
+    ],
+  },
+  debug_getTrieFlushInterval: {
+    exec: (provider, proto, ...args) => {
+      return new Promise((resolve, reject) => {
+        provider.currentProvider.send(
+          {
+            jsonrpc: '2.0',
+            method: 'debug_getTrieFlushInterval',
+            id: new Date().getTime()
+          },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            return resolve(result.result);
+          }
+        );
+      });
+    },
+    codeSample: (url, ...args) => {
+      return web3Template(`eth.debug_getTrieFlushInterval()`, 'trieFlushInterval', url); // Pseudo-code, this doesn't exist in Web3.js
+    },
+    args: [],
+  },
+  debug_traceBlock: {
+    exec: async (web3, proto, ...args) => {
+      return await web3.currentProvider.send({
+        method: 'debug_traceBlock',
+        params: [args[0]]
+      });
+    },
+    codeSample: (url, ...args) => {
+      return `web3.currentProvider.send({
+  method: 'debug_traceBlock',
+  params: ['RLP_ENCODED_BLOCK', '${args[0]}']
+});`;
+    },
+    args: [
+      {
+        type: 'textfield',
+        description: 'An RLP encoded block',
+        placeholder: 'i.e. 0x0000...',
+      },
+    ],
+  },
+
 };
 
 export default Web3JSCalls;

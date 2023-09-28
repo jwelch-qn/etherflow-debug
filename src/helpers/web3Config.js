@@ -306,6 +306,31 @@ const Web3RpcCalls = {
     web3: calls.web3.default.trace_call,
     ethers: calls.ethers.default.trace_call,
   },
+  debug_getBadBlocks: {
+    description:
+      'Returns a list of the last bad blocks that the client has seen on the network.',
+    web3: calls.web3.default.debug_getBadBlocks,
+    ethers: calls.ethers.default.debug_getBadBlocks,
+  },
+  debug_storageRangeAt: {
+    description:
+      'Returns the contract storage for the specified range.',
+    web3: calls.web3.default.debug_storageRangeAt,
+    ethers: calls.ethers.default.debug_storageRangeAt,
+  },
+  debug_getTrieFlushInterval: {
+    description:
+      'Retrieves the current value of in-memory trie flush interval.',
+    web3: calls.web3.default.debug_getTrieFlushInterval,
+    ethers: calls.ethers.default.debug_getTrieFlushInterval,
+  },
+  debug_traceBlock: {
+    description:
+      'Returns a full stack trace of all invoked opcodes of all transactions that were included in a block.',
+    web3: calls.web3.default.debug_traceBlock,
+    ethers: calls.ethers.default.debug_traceBlock,
+  },
+
 };
 
 export default Web3RpcCalls;

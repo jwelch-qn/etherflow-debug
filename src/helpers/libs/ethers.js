@@ -57,9 +57,8 @@ const contractTraceTemplate = (url, args) => {
   const abi = ${abi && JSON.stringify(abi)}
   const provider = new ethers.providers.JsonRpcProvider('${url}');
   const iface = new ethers.utils.Interface(abi);
-  const data = iface.encodeFunctionData("${method}"${
-    methodArgumentsString ? ` , [${methodArgumentsString}]` : ''
-  }); ${from ? `\n  const from = "${from}";` : ''}
+  const data = iface.encodeFunctionData("${method}"${methodArgumentsString ? ` , [${methodArgumentsString}]` : ''
+    }); ${from ? `\n  const from = "${from}";` : ''}
   const to = "${contract}"; ${value ? `\n  const value = "${value}";` : ''}
   const transaction = { ${from ? `\n    from,` : ''}
     to,${value ? `\n    value,` : ''}
@@ -78,9 +77,8 @@ ${filter ? `\n${filter}\n` : ''}
 // HTTP version
 (async () => {
   const provider = new ethers.providers.JsonRpcProvider('${url}');
-  const filterId = await provider.send('${filterMethod}'${
-    filter ? ', [filter]' : ''
-  })
+  const filterId = await provider.send('${filterMethod}'${filter ? ', [filter]' : ''
+    })
   console.log(filterId);
   const logs = await provider.send('eth_getFilterChanges', [filterId]);
   console.log(logs);
@@ -89,9 +87,8 @@ ${filter ? `\n${filter}\n` : ''}
 // WebSocket version
 (async () => {
   const provider = new ethers.providers.WebSocketProvider('${url}');
-  const filterId = await provider.send('${filterMethod}'${
-    filter ? ', [filter]' : ''
-  })
+  const filterId = await provider.send('${filterMethod}'${filter ? ', [filter]' : ''
+    })
   console.log(filterId);
   const logs = await provider.send('eth_getFilterChanges', [filterId]);
   console.log(logs);
@@ -755,16 +752,14 @@ const EthersCalls = {
     codeSample: (url, ...args) => {
       const filter = `const filter = {
   ${args[0] ? "fromBlock: '" + args[0] + "'" : "fromBlock: 'latest'"},
-  ${args[1] ? "toBlock: '" + args[1] + "'" : "toBlock: 'latest'"},${
-        args[2] ? "\n  address: '" + args[2] + "'," : ''
-      }
-  topics: ${
-    args[3]
-      ? JSON.stringify(
-          args[3].split(',').map((x) => (x === 'null' ? null : x.split('||')))
-        )
-      : '[]'
-  }
+  ${args[1] ? "toBlock: '" + args[1] + "'" : "toBlock: 'latest'"},${args[2] ? "\n  address: '" + args[2] + "'," : ''
+        }
+  topics: ${args[3]
+          ? JSON.stringify(
+            args[3].split(',').map((x) => (x === 'null' ? null : x.split('||')))
+          )
+          : '[]'
+        }
 };`;
       return filterTemplate(url, 'eth_newFilter', filter);
     },
@@ -1032,10 +1027,8 @@ const EthersCalls = {
       return ethersTemplate(
         `send('trace_filter', [{
   "fromBlock": "${args[0] || 'latest'}",
-  "toBlock": "${args[1] || 'latest'}",${
-          args[2] ? '\n\t"fromAddress": [' + args[2] + '],' : ''
-        }${args[3] ? '\n\t"toAddress": [' + args[3] + '],' : ''}${
-          args[4] ? '\n\t"after": ' + args[3] + ',' : ''
+  "toBlock": "${args[1] || 'latest'}",${args[2] ? '\n\t"fromAddress": [' + args[2] + '],' : ''
+        }${args[3] ? '\n\t"toAddress": [' + args[3] + '],' : ''}${args[4] ? '\n\t"after": ' + args[3] + ',' : ''
         }${args[4] ? '\n\t"count": ' + args[4] + ',' : ''}
 }])`,
         'trace',
@@ -1159,6 +1152,90 @@ const EthersCalls = {
       },
     ],
   },
+  debug_getBadBlocks: {
+    exec: (provider, proto, ...args) => {
+      return provider.send('debug_getBadBlocks');
+    },
+    codeSample: (url, ...args) => {
+      return ethersTemplate("send('debug_getBadBlocks')", 'badBlocks', url);
+    },
+    args: [],
+  },
+  debug_storageRangeAt: {
+    exec: (provider, proto, ...args) => {
+      return provider.send('debug_storageRangeAt', [args[0], parseInt(args[1], 10), args[2], args[3], parseInt(args[4], 10)])
+        .then(response => {
+          console.log("Storage:", JSON.stringify(response.storage, null, 2));
+          console.log("NextKey:", JSON.stringify(response.nextKey, null, 2));
+        });
+    },
+    codeSample: (url, ...args) => {
+      return ethersTemplate("send('debug_storageRangeAt')", 'storageRange', url);
+    },
+    args: [
+      {
+        type: 'textarea',
+        description: 'The block hash in string format or block number as hexadecimal in the object format',
+        placeholder:
+          'i.e. 0x76f64c40d6493cf00426be2eecdaf3f968768619bfb21ce6c57921be497ab3f7',
+      },
+      {
+        type: 'textarea',
+        description: 'The transaction index for the point in which we want the list of accounts',
+        placeholder:
+          'i.e. 2',
+      },
+      {
+        type: 'textarea',
+        description: 'The contract address',
+        placeholder:
+          'i.e. 0xdafea492d9c6733ae3d56b7ed1adb60692c98bc5',
+      },
+      {
+        type: 'textarea',
+        description: 'The offset (hash of storage key)',
+        placeholder:
+          'i.e. 0x0000000000000000000000000000000000000000000000000000000000000000',
+      },
+      {
+        type: 'textarea',
+        description: 'The number of storage entries to return',
+        placeholder:
+          'i.e. 2',
+      },
+    ],
+  },
+  debug_getTrieFlushInterval: {
+    exec: (provider, proto, ...args) => {
+      return provider.send('debug_getTrieFlushInterval');
+    },
+    codeSample: (url, ...args) => {
+      return ethersTemplate("send('debug_getTrieFlushInterval')", 'trieFLushInterval', url);
+    },
+    args: [],
+  },
+  //Needs more work, not sure if it's doing what it is supposed to do...
+  debug_traceBlock: {
+    exec: (provider, proto, ...args) => {
+      return provider.send('debug_traceBlock', [args[0]]);
+    },
+    codeSample: (url, ...args) => {
+      return ethersTemplate(
+        `send('debug_traceBlock', ['RLP_ENCODED_BLOCK','${args[0]}'])`,
+        'debugTrace',
+        url
+      );
+    },
+    args: [
+      {
+        type: 'textfield',
+        description:
+          'An RLP encoded block',
+        placeholder: 'i.e. 0x0000...',
+      },
+    ],
+  },
+
 };
 
 export default EthersCalls;
